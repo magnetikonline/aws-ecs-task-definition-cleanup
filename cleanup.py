@@ -12,12 +12,12 @@ ECS_TASK_QUERY_BATCH_SIZE = 100
 ECS_TASK_DEFINITION_DELETE_BATCH_SIZE = 10
 
 
-def exit_error(message: str) -> None:
+def exit_error(message: str):
     print(f"Error: {message}", file=sys.stderr)
     sys.exit(1)
 
 
-def write_warning(message: str) -> None:
+def write_warning(message: str):
     print(f"Warning: {message}")
 
 
@@ -110,11 +110,11 @@ def ecs_task_definition_arn_list(client, status: str) -> list[str]:
     return arn_list
 
 
-def ecs_task_definition_deregister(client, definition_arn: str) -> None:
+def ecs_task_definition_deregister(client, definition_arn: str):
     client.deregister_task_definition(taskDefinition=definition_arn)
 
 
-def ecs_task_definition_delete(client, definition_arn_list: list[str]) -> None:
+def ecs_task_definition_delete(client, definition_arn_list: list[str]):
     client.delete_task_definitions(taskDefinitions=definition_arn_list)
 
 
