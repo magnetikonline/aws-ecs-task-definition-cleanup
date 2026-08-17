@@ -82,7 +82,7 @@ def ecs_cluster_task_definition_arn_list(
 ) -> list[str]:
     arn_list = []
     while task_arn_list:
-        # grab maximum batch of `ECS_TASK_QUERY_BATCH_SIZE` ARNs from `task_arn_list`
+        # grab batch of `ECS_TASK_QUERY_BATCH_SIZE` ARNs from `task_arn_list`
         query_arn_list = task_arn_list[:ECS_TASK_QUERY_BATCH_SIZE]
         del task_arn_list[:ECS_TASK_QUERY_BATCH_SIZE]
 
@@ -147,22 +147,22 @@ def main():
         print(
             f"Setting unused ECS task definitions ACTIVE -> INACTIVE{dryrun_message(commit)}"
         )
-        definition_in_use_arn_list = []
+        definition_in_use_arn_set = set()
         definition_in_use_canonical_arn_set = set()
 
         # process each ECS cluster in turn
         for cluster_arn in ecs_cluster_arn_list(client):
             print(f"Processing ECS cluster: {cluster_arn}")
 
-            # pull task list for cluster and in turn, the in-use task definition for each of those tasks
+            # fetch running task list for cluster and in turn, the in-use task definition for each of those tasks
             task_arn_list = ecs_cluster_task_arn_list(client, cluster_arn)
-            in_use_arn_list = ecs_cluster_task_definition_arn_list(
+            definition_arn_list = ecs_cluster_task_definition_arn_list(
                 client, cluster_arn, task_arn_list
             )
 
             # add in-use task definition/canonical ARNs to collections
-            definition_in_use_arn_list.extend(in_use_arn_list)
-            for definition_arn in in_use_arn_list:
+            definition_in_use_arn_set.update(definition_arn_list)
+            for definition_arn in definition_arn_list:
                 definition_in_use_canonical_arn_set.add(
                     canonical_task_definition_arn(definition_arn)
                 )
@@ -181,10 +181,10 @@ def main():
                 canonical_task_definition_arn(active_arn)
                 in definition_in_use_canonical_arn_set
             ):
-                # canonical ARN for task definition in use by cluster task - do not set INACTIVE
+                # canonical ARN for task definition in use by ECS cluster task - do not set INACTIVE
                 continue
 
-            if active_arn not in definition_in_use_arn_list:
+            if active_arn not in definition_in_use_arn_set:
                 unused_arn_list.append(active_arn)
 
         print(f"Unused definition count: {len(unused_arn_list)}\n")
