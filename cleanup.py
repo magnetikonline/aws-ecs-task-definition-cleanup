@@ -21,7 +21,7 @@ def write_warning(message: str):
     print(f"Warning: {message}")
 
 
-def read_arguments() -> tuple[str, bool, bool]:
+def read_arguments() -> tuple[str | None, bool, bool]:
     # create parser
     parser = argparse.ArgumentParser(
         description="Amazon Elastic Container Service (ECS) task definition cleanup"
@@ -139,7 +139,7 @@ def process_aws_api_batch_throttle(
 
 def main():
     # read CLI arguments, create ECS client
-    (set_inactive_mode, delete_inactive, commit) = read_arguments()
+    set_inactive_mode, delete_inactive, commit = read_arguments()
     client = boto3.client("ecs")
 
     if set_inactive_mode is not None:
